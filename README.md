@@ -16,3 +16,8 @@ Then:
 cd scraper
 pip install -r requirements.txt
 ```
+
+## Scraper
+ 
+Scrapes the Yummly API
+
