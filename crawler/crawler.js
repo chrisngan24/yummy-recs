@@ -8,6 +8,18 @@ var BASE_URL = 'http://www.yummly.com/recipe/';
 var BASE_SELECTOR = '#sidebar a.y-image'
 var OUTPUT_BASE_FILE = 'yummly-recs-%s.json';
 
+
+var results = [];
+var resultsIndex = 0;
+
+
+var scrapeGlobalResult = function(){
+  if (resultsIndex < results.length){
+    scrapeURL(results[resultsIndex].id); 
+    resultsIndex++;
+  }
+};
+
 var scrapeURL = function(itemId){
   url = BASE_URL.concat(itemId);
   console.log(url);
@@ -17,6 +29,7 @@ var scrapeURL = function(itemId){
     }
   });
 };
+
 
 var getLinks = function(html, itemId){
   var $ = cheerio.load(html);
@@ -29,9 +42,8 @@ var getLinks = function(html, itemId){
     id : itemId,
     recommendations : recommendations 
   };
-
   writeRowToFile(JSON.stringify(row).concat(','));
-
+  scrapeGlobalResult();
 };
 
 var writeRowToFile = function(string){
@@ -53,6 +65,7 @@ var getOutputFileName = function(){
   return outFile; 
 };
 
+
 var loadJson = function(path, callback){
 
   fs.readFile(path, 'utf8', function(err, data){
@@ -62,7 +75,6 @@ var loadJson = function(path, callback){
       var rows = data.split('\n');
       var i = 0;
 
-      var results = [];
       for (var i = 0; i < rows.length; i++){
         var item = rows[i];
         try{
@@ -76,19 +88,20 @@ var loadJson = function(path, callback){
         } catch(e){
           console.log('error with row '.concat(i)); 
         }
-
       }
+      scrapeGlobalResult();
+/*
       var i = 0;
       var interval = setInterval(function(){
         if (i < results.length) {
           scrapeURL(results[i].id); 
         } else {
           interval = null;   
-          writeRowToFile(']');
+          writeRowToFile(JSON.stringify(this.data));   
+          //  writeRowToFile(']');
         }
         i++;
       }, 900);
-     /* 
       data.forEach(function(item){
         scrapeURL(item.id);
       });
@@ -110,7 +123,7 @@ console.log('Magic happens on port 8081');
 
 exports = module.exports = app;
 
-writeRowToFile('[')
+//writeRowToFile('[')
 
 
 var data = loadJson('../yummly-14-04-22.json');
