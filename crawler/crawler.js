@@ -42,7 +42,7 @@ var getLinks = function(html, itemId){
     id : itemId,
     recommendations : recommendations 
   };
-  writeRowToFile(JSON.stringify(row).concat(','));
+  writeRowToFile(JSON.stringify(row).concat('\n'));
   scrapeGlobalResult();
 };
 
@@ -90,24 +90,6 @@ var loadJson = function(path, callback){
         }
       }
       scrapeGlobalResult();
-/*
-      var i = 0;
-      var interval = setInterval(function(){
-        if (i < results.length) {
-          scrapeURL(results[i].id); 
-        } else {
-          interval = null;   
-          writeRowToFile(JSON.stringify(this.data));   
-          //  writeRowToFile(']');
-        }
-        i++;
-      }, 900);
-      data.forEach(function(item){
-        scrapeURL(item.id);
-      });
-      */
-      //scrapeURL(data[0].id);
-      //scrapeURL(data[1].id);
 
       if (callback){
         callback(data);
@@ -123,7 +105,6 @@ console.log('Magic happens on port 8081');
 
 exports = module.exports = app;
 
-//writeRowToFile('[')
 
 
 var data = loadJson('../yummly-14-04-22.json');
