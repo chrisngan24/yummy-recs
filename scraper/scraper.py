@@ -29,7 +29,7 @@ def main():
     starts_at = 1 
     total_match_count = None 
 
-    with open('yummly-%s.json' % datetime.datetime.now().__str__(),
+    with open('yummly-%s.json' % datetime.datetime.now().__str__().split(' ')[0],
               'w') as fi:
         while total_match_count == None or starts_at <= total_match_count:
             try:

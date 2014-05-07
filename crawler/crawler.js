@@ -7,22 +7,30 @@ var app     = express();
 var BASE_URL = 'http://www.yummly.com/recipe/';
 var BASE_SELECTOR = '#sidebar a.y-image'
 var OUTPUT_BASE_FILE = 'yummly-recs-%s.json';
+var OUTPUT_BASE_FOLDER = './out/yummly-recs-%s';
 
 
 var results = [];
-var resultsIndex = 0;
+var resultsIndex = 96951;
+var fileCount = 110;
+var fileSizeLimit = 4000;
 
 
 var scrapeGlobalResult = function(){
-  if (resultsIndex < results.length){
-    scrapeURL(results[resultsIndex].id); 
-    resultsIndex++;
+  try{
+    if (resultsIndex < 499999){
+      scrapeURL(results[resultsIndex].id); 
+      resultsIndex++;
+    }
+  } catch(error){
+    console.log(error);
+    scrapeGlobalResult();
   }
 };
 
 var scrapeURL = function(itemId){
   url = BASE_URL.concat(itemId);
-  console.log(url);
+  console.log(url + ' resultsIndex: ' + resultsIndex.toString());
   request(url, function(error, response, html){
     if(!error){
       getLinks(html, itemId);  
@@ -47,8 +55,26 @@ var getLinks = function(html, itemId){
 };
 
 var writeRowToFile = function(string){
-  var file = fs.createWriteStream(getOutputFileName(), {'flags' : 'a'});
-  file.write(string);
+  try{
+    fs.appendFile(getOutputFileName(), string, {'flags' : 'a'}, function(error){
+      if(error){
+        console.log('error with' + string);
+        console.log(error);
+      }
+    });
+    /*
+    fs.createWriteStream(getOutputFileName(), {'flags' : 'a'}, function(error, file){
+      if(!error){
+        file.write(string);
+      } else {
+        console.log(error); 
+      }
+    });
+*/
+  } catch(error){
+    console.log(error);
+
+  }
 };
 
 var getIdFromHref = function(href){
@@ -56,13 +82,20 @@ var getIdFromHref = function(href){
   return split[split.length-1];
 };
 
-var outFile = null;
+var outFolder = null;
 var getOutputFileName = function(){
-  if(!outFile){
+
+  if(!outFolder){
     var d = new Date();
-    outFile = OUTPUT_BASE_FILE.replace('%s', d.getTime());
+    outFolder = OUTPUT_BASE_FOLDER.replace('%s', d.getTime());
+    fs.mkdir(outFolder);
   } 
-  return outFile; 
+
+  if (resultsIndex % fileSizeLimit == 0){
+    fileCount++;
+  }
+
+  return outFolder + '/' + OUTPUT_BASE_FILE.replace('%s', fileCount); 
 };
 
 
@@ -79,12 +112,7 @@ var loadJson = function(path, callback){
         var item = rows[i];
         try{
           var parsed = JSON.parse(item); 
-          results.push(parsed);
-          /*
-          setTimeout(function(){
-            scrapeURL(parsed.id); 
-          }, 100);
-          */
+          results.push(parsed);          
         } catch(e){
           console.log('error with row '.concat(i)); 
         }
@@ -107,4 +135,5 @@ exports = module.exports = app;
 
 
 
-var data = loadJson('../yummly-14-04-22.json');
+//var data = loadJson('../yummly-14-04-22.json');
+var data = loadJson('../yummly-2014-05-04.json');
